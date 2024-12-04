@@ -8,26 +8,26 @@ import os
 
 app = Flask(__name__, template_folder='templates')
 
+# Define DEMO_ARGS first
+EXAMPLES_PATH = os.path.expanduser("~/hailo-rpi5-examples")
+
+DEMO_ARGS = {
+    f"{EXAMPLES_PATH}/basic_pipelines/detection.py": "Object Detection Demo",
+    f"{EXAMPLES_PATH}/basic_pipelines/pose_estimation.py": "Pose Estimation Demo",
+    f"{EXAMPLES_PATH}/basic_pipelines/instance_segmentation.py": "Instance Segmentation Demo",
+    # Add more demos as needed
+}
+
 # Global variable to keep track of the stress test process
 stress_test_process = None
+
+# Initialize stress_test_options after DEMO_ARGS is defined
 stress_test_options = {
-    'num_threads': 3,
+    'num_threads': 2,
     'demos': list(DEMO_ARGS.keys()),
     'min_interval': 10,
     'max_interval': 30,
 }
-
-# Define DEMO_ARGS in app.py as well
-MODEL_ZOO_PATH = os.path.expanduser("~/hailo_model_zoo")
-EXAMPLES_PATH = os.path.expanduser("~/hailo-rpi5-examples")
-
-DEMO_ARGS = {
-    f"{EXAMPLES_PATH}/object_detection_demo.py": "Object Detection Demo",
-    f"{EXAMPLES_PATH}/classification_demo.py": "Classification Demo",
-    f"{MODEL_ZOO_PATH}/eval_scripts/eval_image.py": "Eval Image Script",
-    f"{MODEL_ZOO_PATH}/eval_scripts/eval_video.py": "Eval Video Script",
-}
-
 
 @app.route('/')
 def index():
@@ -63,13 +63,12 @@ def index():
         available_demos=DEMO_ARGS
     )
 
-
 @app.route('/start_stress_test', methods=['POST'])
 def start_stress_test():
     global stress_test_process, stress_test_options
     if stress_test_process is None or stress_test_process.poll() is not None:
         # Get options from form
-        num_threads = int(request.form.get('num_threads', 3))
+        num_threads = int(request.form.get('num_threads', 2))
         selected_demos = request.form.getlist('demos')
         min_interval = int(request.form.get('min_interval', 10))
         max_interval = int(request.form.get('max_interval', 30))
@@ -95,7 +94,6 @@ def start_stress_test():
         stress_test_process = subprocess.Popen(cmd, cwd=os.path.dirname(script_path))
     return redirect(url_for('index'))
 
-
 @app.route('/stop_stress_test', methods=['POST'])
 def stop_stress_test():
     global stress_test_process
@@ -105,7 +103,6 @@ def stop_stress_test():
         stress_test_process.wait()
         stress_test_process = None
     return redirect(url_for('index'))
-
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080)

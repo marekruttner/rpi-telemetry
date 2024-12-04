@@ -3,6 +3,7 @@ import subprocess
 import threading
 import time
 import random
+import argparse
 
 # Path to the cloned repository
 EXAMPLES_PATH = os.path.expanduser("~/hailo-rpi5-examples")
@@ -39,11 +40,13 @@ AVAILABLE_DEMOS = {
     # Add more demos as needed
 }
 
-def run_random_demo():
+def run_random_demo(selected_demos, min_interval, max_interval):
     """Select and execute a random demo at a random interval."""
     while True:
-        # Choose a random demo
-        demo_name, demo_args = random.choice(list(AVAILABLE_DEMOS.items()))
+        # Choose a random demo from selected demos
+        demo_script = random.choice(selected_demos)
+        demo_args = AVAILABLE_DEMOS[demo_script]
+        demo_name = os.path.basename(demo_script)
 
         print(f"Running demo: {demo_name}")
 
@@ -62,16 +65,15 @@ def run_random_demo():
             print(f"Error during {demo_name} execution:", e)
 
         # Wait for a random interval before running the next demo
-        sleep_time = random.randint(10, 30)  # Wait between 10 to 30 seconds
+        sleep_time = random.randint(min_interval, max_interval)
         print(f"Waiting {sleep_time} seconds before running the next demo.")
         time.sleep(sleep_time)
 
-def start_random_demos():
+def start_random_demos(num_threads, selected_demos, min_interval, max_interval):
     """Run multiple instances of random demos."""
     threads = []
-    num_threads = 2  # Number of parallel demo runners
     for _ in range(num_threads):
-        t = threading.Thread(target=run_random_demo)
+        t = threading.Thread(target=run_random_demo, args=(selected_demos, min_interval, max_interval))
         t.daemon = True
         t.start()
         threads.append(t)
@@ -81,4 +83,12 @@ def start_random_demos():
         time.sleep(1)
 
 if __name__ == '__main__':
-    start_random_demos()
+    parser = argparse.ArgumentParser(description='Stress Test with Hailo AI Demos')
+    parser.add_argument('--num_threads', type=int, default=2, help='Number of parallel demo runners')
+    parser.add_argument('--demos', nargs='+', choices=list(AVAILABLE_DEMOS.keys()), default=list(AVAILABLE_DEMOS.keys()), help='List of demos to run')
+    parser.add_argument('--min_interval', type=int, default=10, help='Minimum interval between demos in seconds')
+    parser.add_argument('--max_interval', type=int, default=30, help='Maximum interval between demos in seconds')
+    args = parser.parse_args()
+
+    selected_demos = args.demos
+    start_random_demos(args.num_threads, selected_demos, args.min_interval, args.max_interval)
