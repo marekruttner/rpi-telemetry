@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Raspberry Pi Telemetry Dashboard</title>
+    <script src="https://cdn.plot.ly/plotly-2.9.0.min.js"></script>
+</head>
+<body>
+    <h1>Raspberry Pi Telemetry Dashboard</h1>
+    <div id='cpu' style='width:100%;height:500px;'></div>
+    <div id='temp' style='width:100%;height:500px;'></div>
+    <div id='ram' style='width:100%;height:500px;'></div>
+    <div id='proc' style='width:100%;height:500px;'></div>
+
+    <script>
+        var graphs = {{ graphs | safe }};
+
+        Plotly.newPlot('cpu', JSON.parse(graphs.cpu).data, JSON.parse(graphs.cpu).layout);
+        Plotly.newPlot('temp', JSON.parse(graphs.temp).data, JSON.parse(graphs.temp).layout);
+        Plotly.newPlot('ram', JSON.parse(graphs.ram).data, JSON.parse(graphs.ram).layout);
+        Plotly.newPlot('proc', JSON.parse(graphs.proc).data, JSON.parse(graphs.proc).layout);
+    </script>
+</body>
+</html>
