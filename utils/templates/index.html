@@ -6,6 +6,48 @@
 </head>
 <body>
     <h1>Raspberry Pi Telemetry Dashboard</h1>
+    <!-- Stress Test Control -->
+    <div>
+        {% if stress_test_running %}
+            <p>Stress Test is currently running with the following settings:</p>
+            <ul>
+                <li>Number of Threads: {{ stress_test_options.num_threads }}</li>
+                <li>Demos:
+                    <ul>
+                        {% for demo in stress_test_options.demos %}
+                            <li>{{ available_demos[demo] }}</li>
+                        {% endfor %}
+                    </ul>
+                </li>
+                <li>Interval Between Demos: {{ stress_test_options.min_interval }} to {{ stress_test_options.max_interval }} seconds</li>
+            </ul>
+            <form action="{{ url_for('stop_stress_test') }}" method="post">
+                <button type="submit">Stop Stress Test</button>
+            </form>
+        {% else %}
+            <h2>Configure Stress Test</h2>
+            <form action="{{ url_for('start_stress_test') }}" method="post">
+                <label for="num_threads">Number of Threads:</label>
+                <input type="number" id="num_threads" name="num_threads" value="3" min="1" max="10"><br><br>
+
+                <label for="demos">Select Demos to Run:</label><br>
+                {% for demo_path, demo_name in available_demos.items() %}
+                    <input type="checkbox" id="{{ demo_name }}" name="demos" value="{{ demo_path }}" checked>
+                    <label for="{{ demo_name }}">{{ demo_name }}</label><br>
+                {% endfor %}
+                <br>
+
+                <label for="min_interval">Minimum Interval (seconds):</label>
+                <input type="number" id="min_interval" name="min_interval" value="10" min="1"><br><br>
+
+                <label for="max_interval">Maximum Interval (seconds):</label>
+                <input type="number" id="max_interval" name="max_interval" value="30" min="1"><br><br>
+
+                <button type="submit">Start Stress Test</button>
+            </form>
+        {% endif %}
+    </div>
+    <!-- Graphs -->
     <div id='cpu' style='width:100%;height:500px;'></div>
     <div id='temp' style='width:100%;height:500px;'></div>
     <div id='ram' style='width:100%;height:500px;'></div>

@@ -10,6 +10,24 @@ app = Flask(__name__, template_folder='templates')
 
 # Global variable to keep track of the stress test process
 stress_test_process = None
+stress_test_options = {
+    'num_threads': 3,
+    'demos': list(DEMO_ARGS.keys()),
+    'min_interval': 10,
+    'max_interval': 30,
+}
+
+# Define DEMO_ARGS in app.py as well
+MODEL_ZOO_PATH = os.path.expanduser("~/hailo_model_zoo")
+EXAMPLES_PATH = os.path.expanduser("~/hailo-rpi5-examples")
+
+DEMO_ARGS = {
+    f"{EXAMPLES_PATH}/object_detection_demo.py": "Object Detection Demo",
+    f"{EXAMPLES_PATH}/classification_demo.py": "Classification Demo",
+    f"{MODEL_ZOO_PATH}/eval_scripts/eval_image.py": "Eval Image Script",
+    f"{MODEL_ZOO_PATH}/eval_scripts/eval_video.py": "Eval Video Script",
+}
+
 
 @app.route('/')
 def index():
@@ -37,16 +55,46 @@ def index():
     # Check if stress test is running
     stress_test_running = stress_test_process is not None and stress_test_process.poll() is None
 
-    return render_template('index.html', graphs=graphs, stress_test_running=stress_test_running)
+    return render_template(
+        'index.html',
+        graphs=graphs,
+        stress_test_running=stress_test_running,
+        stress_test_options=stress_test_options,
+        available_demos=DEMO_ARGS
+    )
+
 
 @app.route('/start_stress_test', methods=['POST'])
 def start_stress_test():
-    global stress_test_process
+    global stress_test_process, stress_test_options
     if stress_test_process is None or stress_test_process.poll() is not None:
-        # Start the stress test process
+        # Get options from form
+        num_threads = int(request.form.get('num_threads', 3))
+        selected_demos = request.form.getlist('demos')
+        min_interval = int(request.form.get('min_interval', 10))
+        max_interval = int(request.form.get('max_interval', 30))
+
+        # Update stress test options
+        stress_test_options = {
+            'num_threads': num_threads,
+            'demos': selected_demos,
+            'min_interval': min_interval,
+            'max_interval': max_interval,
+        }
+
+        # Build command to start stress_test.py with arguments
         script_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'stress_test.py')
-        stress_test_process = subprocess.Popen(['python', script_path], cwd=os.path.dirname(script_path))
+        cmd = ['python', script_path,
+               '--num_threads', str(num_threads),
+               '--min_interval', str(min_interval),
+               '--max_interval', str(max_interval)]
+        for demo in selected_demos:
+            cmd.extend(['--demos', demo])
+
+        # Start the stress test process
+        stress_test_process = subprocess.Popen(cmd, cwd=os.path.dirname(script_path))
     return redirect(url_for('index'))
+
 
 @app.route('/stop_stress_test', methods=['POST'])
 def stop_stress_test():
@@ -57,6 +105,7 @@ def stop_stress_test():
         stress_test_process.wait()
         stress_test_process = None
     return redirect(url_for('index'))
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080)

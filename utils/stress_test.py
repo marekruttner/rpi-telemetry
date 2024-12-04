@@ -4,47 +4,48 @@ import threading
 import time
 import random
 
-# Paths to cloned repositories
-MODEL_ZOO_PATH = os.path.expanduser("~/hailo_model_zoo")
+# Path to the cloned repository
 EXAMPLES_PATH = os.path.expanduser("~/hailo-rpi5-examples")
 
-# List of available demos and scripts
-AVAILABLE_DEMOS = [
-    f"{EXAMPLES_PATH}/object_detection_demo.py",
-    f"{EXAMPLES_PATH}/classification_demo.py",
-    f"{MODEL_ZOO_PATH}/eval_scripts/eval_image.py",
-    f"{MODEL_ZOO_PATH}/eval_scripts/eval_video.py",
-]
-
-# List of arguments for each demo
-DEMO_ARGS = {
-    f"{EXAMPLES_PATH}/object_detection_demo.py": ["python", f"{EXAMPLES_PATH}/object_detection_demo.py"],
-    f"{EXAMPLES_PATH}/classification_demo.py": ["python", f"{EXAMPLES_PATH}/classification_demo.py"],
-    f"{MODEL_ZOO_PATH}/eval_scripts/eval_image.py": [
-        "python",
-        f"{MODEL_ZOO_PATH}/eval_scripts/eval_image.py",
-        "--model", "yolov5s",  # Example model name
-        "--target", "hailo",
-        "--image", "path_to_test_image.jpg",  # Replace with actual image path
+# List of available demos and their arguments
+AVAILABLE_DEMOS = {
+    "Object Detection": [
+        "python3",
+        f"{EXAMPLES_PATH}/basic_pipelines/detection.py"
     ],
-    f"{MODEL_ZOO_PATH}/eval_scripts/eval_video.py": [
-        "python",
-        f"{MODEL_ZOO_PATH}/eval_scripts/eval_video.py",
-        "--model", "mobilenetv2",  # Example model name
-        "--target", "hailo",
-        "--video", "path_to_test_video.mp4",  # Replace with actual video path
+    "Pose Estimation": [
+        "python3",
+        f"{EXAMPLES_PATH}/basic_pipelines/pose_estimation.py"
     ],
+    "Instance Segmentation": [
+        "python3",
+        f"{EXAMPLES_PATH}/basic_pipelines/instance_segmentation.py"
+    ],
+    "Object Detection USB": [
+        "python3",
+        f"{EXAMPLES_PATH}/basic_pipelines/detection.py",
+        "--input", "dev/video8"  # Replace with actual input source
+    ],
+    "Pose Estimation USB": [
+        "python3",
+        f"{EXAMPLES_PATH}/basic_pipelines/pose_estimation.py",
+        "--input", "dev/video8"  # Replace with actual input source
+    ],
+    "Instance Segmentation USB": [
+        "python3",
+        f"{EXAMPLES_PATH}/basic_pipelines/instance_segmentation.py",
+        "--input", "dev/video8"  # Replace with actual input source
+    ],
+    # Add more demos as needed
 }
-
 
 def run_random_demo():
     """Select and execute a random demo at a random interval."""
     while True:
         # Choose a random demo
-        demo_script = random.choice(AVAILABLE_DEMOS)
-        demo_args = DEMO_ARGS[demo_script]
+        demo_name, demo_args = random.choice(list(AVAILABLE_DEMOS.items()))
 
-        print(f"Running demo: {demo_script}")
+        print(f"Running demo: {demo_name}")
 
         try:
             # Run the selected demo
@@ -54,22 +55,21 @@ def run_random_demo():
                 stderr=subprocess.PIPE,
                 text=True
             )
-            print("Demo Output:", result.stdout)
+            print(f"{demo_name} Output:", result.stdout)
             if result.stderr:
-                print("Demo Error:", result.stderr)
+                print(f"{demo_name} Error:", result.stderr)
         except Exception as e:
-            print("Error during demo execution:", e)
+            print(f"Error during {demo_name} execution:", e)
 
         # Wait for a random interval before running the next demo
         sleep_time = random.randint(10, 30)  # Wait between 10 to 30 seconds
         print(f"Waiting {sleep_time} seconds before running the next demo.")
         time.sleep(sleep_time)
 
-
 def start_random_demos():
     """Run multiple instances of random demos."""
     threads = []
-    num_threads = 3  # Number of parallel demo runners
+    num_threads = 2  # Number of parallel demo runners
     for _ in range(num_threads):
         t = threading.Thread(target=run_random_demo)
         t.daemon = True
@@ -79,7 +79,6 @@ def start_random_demos():
     # Keep the main thread alive
     while True:
         time.sleep(1)
-
 
 if __name__ == '__main__':
     start_random_demos()
