@@ -12,9 +12,9 @@ app = Flask(__name__, template_folder='templates')
 EXAMPLES_PATH = os.path.expanduser("~/hailo-rpi5-examples")
 
 DEMO_ARGS = {
-    f"{EXAMPLES_PATH}/basic_pipelines/detection.py": "Object Detection Demo",
-    f"{EXAMPLES_PATH}/basic_pipelines/pose_estimation.py": "Pose Estimation Demo",
-    f"{EXAMPLES_PATH}/basic_pipelines/instance_segmentation.py": "Instance Segmentation Demo",
+    "Object Detection": f"{EXAMPLES_PATH}/basic_pipelines/detection.py",
+    "Pose Estimation": f"{EXAMPLES_PATH}/basic_pipelines/pose_estimation.py",
+    "Instance Segmentation": f"{EXAMPLES_PATH}/basic_pipelines/instance_segmentation.py",
     # Add more demos as needed
 }
 
@@ -83,7 +83,7 @@ def start_stress_test():
 
         # Build command to start stress_test.py with arguments
         script_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'stress_test.py')
-        cmd = ['python', script_path,
+        cmd = ['python3', script_path,
                '--num_threads', str(num_threads),
                '--min_interval', str(min_interval),
                '--max_interval', str(max_interval)]

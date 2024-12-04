@@ -31,11 +31,10 @@
                 <input type="number" id="num_threads" name="num_threads" value="3" min="1" max="10"><br><br>
 
                 <label for="demos">Select Demos to Run:</label><br>
-                {% for demo_path, demo_name in available_demos.items() %}
-                    <input type="checkbox" id="{{ demo_name }}" name="demos" value="{{ demo_path }}" checked>
+                {% for demo_name, demo_path in available_demos.items() %}
+                    <input type="checkbox" id="{{ demo_name }}" name="demos" value="{{ demo_name }}" checked>
                     <label for="{{ demo_name }}">{{ demo_name }}</label><br>
                 {% endfor %}
-                <br>
 
                 <label for="min_interval">Minimum Interval (seconds):</label>
                 <input type="number" id="min_interval" name="min_interval" value="10" min="1"><br><br>

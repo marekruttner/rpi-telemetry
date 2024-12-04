@@ -22,21 +22,6 @@ AVAILABLE_DEMOS = {
         "python3",
         f"{EXAMPLES_PATH}/basic_pipelines/instance_segmentation.py"
     ],
-    "Object Detection USB": [
-        "python3",
-        f"{EXAMPLES_PATH}/basic_pipelines/detection.py",
-        "--input", "dev/video8"  # Replace with actual input source
-    ],
-    "Pose Estimation USB": [
-        "python3",
-        f"{EXAMPLES_PATH}/basic_pipelines/pose_estimation.py",
-        "--input", "dev/video8"  # Replace with actual input source
-    ],
-    "Instance Segmentation USB": [
-        "python3",
-        f"{EXAMPLES_PATH}/basic_pipelines/instance_segmentation.py",
-        "--input", "dev/video8"  # Replace with actual input source
-    ],
     # Add more demos as needed
 }
 
@@ -44,9 +29,8 @@ def run_random_demo(selected_demos, min_interval, max_interval):
     """Select and execute a random demo at a random interval."""
     while True:
         # Choose a random demo from selected demos
-        demo_script = random.choice(selected_demos)
-        demo_args = AVAILABLE_DEMOS[demo_script]
-        demo_name = os.path.basename(demo_script)
+        demo_name = random.choice(selected_demos)
+        demo_args = AVAILABLE_DEMOS[demo_name]
 
         print(f"Running demo: {demo_name}")
 
